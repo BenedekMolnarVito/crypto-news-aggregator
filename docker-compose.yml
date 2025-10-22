@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  scraper:
+    build: ./scraper_service
+    container_name: crypto_scraper
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+  sentiment:
+    build: ./fastapi_service
+    container_name: crypto_sentiment_api
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-https://api.ollama.ai/api/generate}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama2}
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+  webapp:
+    build: ./django_app
+    container_name: crypto_webapp
+    ports:
+      - "8080:8080"
+    environment:
+      - SCRAPER_SERVICE_URL=http://scraper:5000
+      - SENTIMENT_SERVICE_URL=http://sentiment:8000
+      - DJANGO_SETTINGS_MODULE=crypto_sentiment.settings
+    depends_on:
+      - scraper
+      - sentiment
+    networks:
+      - crypto_network
+    volumes:
+      - ./django_app/db.sqlite3:/app/db.sqlite3
+    restart: unless-stopped
+
+networks:
+  crypto_network:
+    driver: bridge
