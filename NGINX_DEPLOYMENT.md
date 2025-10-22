@@ -82,47 +82,29 @@ curl http://localhost/crypto-news
 - **Sentiment API**: http://vitoscaletta.duckdns.org/sentiment-api/
 - **API Docs**: http://vitoscaletta.duckdns.org/sentiment-api/docs
 
-## SSL/HTTPS Setup (Optional)
+## SSL/HTTPS Configuration
 
-For production deployment with SSL, you can use Let's Encrypt:
+Your domain (vitoscaletta.duckdns.org) already has an SSL certificate configured. To use HTTPS with this application:
 
-### 1. Install Certbot
+### Update Nginx Configuration for SSL
 
-```bash
-sudo apt-get update
-sudo apt-get install certbot python3-certbot-nginx
-```
-
-### 2. Stop Nginx Container
-
-```bash
-docker-compose stop nginx
-```
-
-### 3. Obtain SSL Certificate
-
-```bash
-sudo certbot certonly --standalone -d vitoscaletta.duckdns.org
-```
-
-### 4. Update Nginx Configuration
-
-Add SSL configuration to `nginx/nginx.conf`:
+Modify `nginx/nginx.conf` to include your existing SSL certificate paths:
 
 ```nginx
 server {
     listen 443 ssl http2;
     server_name vitoscaletta.duckdns.org;
     
-    ssl_certificate /etc/letsencrypt/live/vitoscaletta.duckdns.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/vitoscaletta.duckdns.org/privkey.pem;
+    # Use your existing SSL certificate paths
+    ssl_certificate /path/to/your/fullchain.pem;
+    ssl_certificate_key /path/to/your/privkey.pem;
     
     # SSL settings
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
     
-    # ... rest of your location blocks
+    # ... rest of your location blocks (copy from existing config)
 }
 
 server {
@@ -132,23 +114,19 @@ server {
 }
 ```
 
-### 5. Update Docker Compose
+### Update Docker Compose for SSL
 
-Add SSL volume to nginx service in `docker-compose.yml`:
+Mount your existing SSL certificate directory in `docker-compose.yml`:
 
 ```yaml
 nginx:
   volumes:
     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    - /etc/letsencrypt:/etc/letsencrypt:ro
+    - /path/to/your/ssl/certs:/etc/ssl/certs:ro
     - nginx_logs:/var/log/nginx
 ```
 
-### 6. Restart Services
-
-```bash
-docker-compose up -d --build
-```
+Replace `/path/to/your/ssl/certs` with the actual path to your SSL certificate directory.
 
 ## Maintenance
 
@@ -309,7 +287,7 @@ docker volume prune
 ## Security Recommendations
 
 1. **Change default passwords** in `.env` file
-2. **Enable SSL/HTTPS** for production
+2. **Configure SSL certificate paths** in nginx configuration (SSL already exists on domain)
 3. **Set up firewall rules** to restrict access
 4. **Regular updates**: Keep Docker images updated
 5. **Monitor logs**: Set up log monitoring and alerts
