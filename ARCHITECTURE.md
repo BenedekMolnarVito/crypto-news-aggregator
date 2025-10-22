@@ -39,7 +39,7 @@
 │                         Port: 8080                                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │  • Main web interface and dashboard                                 │
-│  • SQLite database for article storage                              │
+│  • PostgreSQL database for article storage                          │
 │  • REST API endpoints:                                              │
 │    - POST /api/scrape/ (trigger scraping)                           │
 │    - POST /api/analyze/ (trigger analysis)                          │
@@ -134,7 +134,7 @@ Production (Docker Compose):
 └──────────────┴────────────────┴────────────────┴─────────────────┘
 
 Volumes:
-  • db_volume: PostgreSQL/SQLite database
+  • postgres_data: PostgreSQL database
   • static_volume: Django static files
   • media_volume: Uploaded media files
 
@@ -145,7 +145,8 @@ Volumes:
 Backend Services:
   • Scraper: Flask + BeautifulSoup + Requests
   • Sentiment: FastAPI + Ollama Client + Pydantic
-  • Web App: Django + SQLite/PostgreSQL
+  • Web App: Django + PostgreSQL
+  • Database: PostgreSQL 16
 
 Frontend:
   • HTML5, CSS3, JavaScript (Vanilla)

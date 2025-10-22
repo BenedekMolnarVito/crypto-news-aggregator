@@ -273,10 +273,11 @@ SECURE_HSTS_PRELOAD = True
 
 ### 3. Database Security
 
-- Use PostgreSQL instead of SQLite in production
-- Enable SSL connections
+- PostgreSQL is now used by default
+- Enable SSL connections in production
 - Use strong passwords
 - Regular backups
+- Restrict database access to application network only
 
 ### 4. API Security
 

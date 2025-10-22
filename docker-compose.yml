@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: crypto_postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME:-crypto_news}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - crypto_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   scraper:
     build: ./scraper_service
     container_name: crypto_scraper
@@ -33,15 +51,25 @@ services:
       - SCRAPER_SERVICE_URL=http://scraper:5000
       - SENTIMENT_SERVICE_URL=http://sentiment:8000
       - DJANGO_SETTINGS_MODULE=crypto_sentiment.settings
+      - DB_NAME=${DB_NAME:-crypto_news}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
     depends_on:
-      - scraper
-      - sentiment
+      db:
+        condition: service_healthy
+      scraper:
+        condition: service_started
+      sentiment:
+        condition: service_started
     networks:
       - crypto_network
-    volumes:
-      - ./django_app/db.sqlite3:/app/db.sqlite3
     restart: unless-stopped
 
 networks:
   crypto_network:
     driver: bridge
+
+volumes:
+  postgres_data:

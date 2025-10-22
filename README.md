@@ -19,7 +19,7 @@ This application follows a **microservice architecture** with three main service
 3. **Web Application** (Django) - Port 8080
    - Main user interface and dashboard
    - Orchestrates scraper and sentiment services
-   - Stores and manages articles in SQLite database
+   - Stores and manages articles in PostgreSQL database
    - Displays sentiment analysis results
 
 ## 🚀 Features

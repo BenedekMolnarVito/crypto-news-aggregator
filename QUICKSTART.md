@@ -20,10 +20,16 @@ This guide will help you get the Crypto News Aggregator up and running quickly.
    cp .env.example .env
    ```
    
-   Edit `.env` and set your Ollama API configuration:
+   Edit `.env` and configure your settings:
    ```bash
+   # Ollama API
    OLLAMA_API_URL=https://api.ollama.ai/api/generate
    OLLAMA_MODEL=llama2
+   
+   # Database
+   DB_NAME=crypto_news
+   DB_USER=postgres
+   DB_PASSWORD=postgres
    ```
 
 3. **Start all services**
@@ -65,13 +71,34 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 The sentiment API will be available at http://localhost:8000
 
-### 3. Set up Django Web Application
+### 3. Set up PostgreSQL Database
+
+First, install and start PostgreSQL:
+
+```bash
+# For Ubuntu/Debian
+sudo apt-get install postgresql postgresql-contrib
+sudo systemctl start postgresql
+
+# Create database
+sudo -u postgres createdb crypto_news
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+```
+
+### 4. Set up Django Web Application
 
 Open another terminal:
 
 ```bash
 cd django_app
 pip install -r requirements.txt
+
+# Set environment variables
+export DB_NAME=crypto_news
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
 
 # Run migrations
 python manage.py migrate
@@ -84,6 +111,8 @@ python manage.py runserver 0.0.0.0:8080
 ```
 
 The web application will be available at http://localhost:8080
+
+**Note:** For development without Docker, you can also use SQLite by modifying the DATABASES setting in `django_app/crypto_sentiment/settings.py`.
 
 ## Using the API
 
