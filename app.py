@@ -101,7 +101,8 @@ def call_ollama_api(prompt, system_prompt, model="llama3.2"):
     except requests.exceptions.ConnectionError:
         return "Error: Cannot connect to Ollama API. Please make sure Ollama is running on localhost:11434"
     except Exception as e:
-        return f"Error calling Ollama API: {str(e)}"
+        print(f"Ollama API error: {e}")  # Log to server console only
+        return "Error: Failed to communicate with Ollama API. Please try again later."
 
 
 @app.route('/')
@@ -121,9 +122,10 @@ def scrape():
             'count': len(news_data)
         })
     except Exception as e:
+        print(f"Scraping error: {e}")  # Log to server console only
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to scrape news. Please try again later.'
         }), 500
 
 
@@ -164,9 +166,10 @@ Please analyze the overall sentiment and provide key insights."""
             'sentiment': analysis
         })
     except Exception as e:
+        print(f"Sentiment analysis error: {e}")  # Log to server console only
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to analyze sentiment. Please try again later.'
         }), 500
 
 
@@ -201,11 +204,15 @@ Keep the response concise and well-structured."""
             'prediction': prediction
         })
     except Exception as e:
+        print(f"Price prediction error: {e}")  # Log to server console only
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to predict prices. Please try again later.'
         }), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Debug mode should be disabled in production for security
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
