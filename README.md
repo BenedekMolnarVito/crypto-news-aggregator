@@ -74,9 +74,13 @@ docker-compose up --build
 ```
 
 4. Access the application:
-   - Web Dashboard: http://localhost:8080
-   - Scraper API: http://localhost:5000
-   - Sentiment API: http://localhost:8000
+   - **With Nginx (Production)**: http://vitoscaletta.duckdns.org/crypto-news
+   - **Direct Access (Development)**:
+     - Web Dashboard: http://localhost:8080
+     - Scraper API: http://localhost:5000 (via http://localhost/scraper-api/)
+     - Sentiment API: http://localhost:8000 (via http://localhost/sentiment-api/)
+
+**Note**: The nginx service provides reverse proxy and URL routing. See `NGINX_DEPLOYMENT.md` for production deployment guide.
 
 ### Option 2: Manual Setup
 
