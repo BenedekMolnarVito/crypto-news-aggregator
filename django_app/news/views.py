@@ -54,7 +54,7 @@ class ScrapeNewsView(View):
             logger.error(f"Error scraping news: {e}")
             return JsonResponse({
                 'success': False,
-                'error': str(e)
+                'error': 'Failed to scrape news articles'
             }, status=500)
 
 
@@ -86,7 +86,7 @@ class AnalyzeSentimentView(View):
             logger.error(f"Error analyzing sentiment: {e}")
             return JsonResponse({
                 'success': False,
-                'error': str(e)
+                'error': 'Failed to analyze sentiment'
             }, status=500)
 
 

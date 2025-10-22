@@ -6,11 +6,13 @@ Provides endpoints to trigger scraping and retrieve articles.
 from flask import Flask, jsonify
 from scraper import CryptoNewsScraper
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 scraper = CryptoNewsScraper()
 
 
@@ -34,7 +36,7 @@ def scrape_news():
         logger.error(f"Error in scrape endpoint: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to scrape articles'
         }), 500
 
 
@@ -52,7 +54,7 @@ def scrape_coindesk():
         logger.error(f"Error in coindesk endpoint: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to scrape CoinDesk'
         }), 500
 
 
@@ -70,7 +72,7 @@ def scrape_cointelegraph():
         logger.error(f"Error in cointelegraph endpoint: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to scrape CoinTelegraph'
         }), 500
 
 
@@ -88,9 +90,10 @@ def scrape_yahoo():
         logger.error(f"Error in yahoo endpoint: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to scrape Yahoo Finance'
         }), 500
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
