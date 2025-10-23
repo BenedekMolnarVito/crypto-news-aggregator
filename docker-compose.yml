@@ -4,7 +4,7 @@ services:
     container_name: crypto_postgres
     environment:
       - POSTGRES_DB=${DB_NAME:-crypto_news}
-      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_USER=${DB_USER:-user1}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -14,7 +14,7 @@ services:
       - crypto_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U user1 -d crypto_news"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,7 +53,7 @@ services:
       - DJANGO_SETTINGS_MODULE=crypto_sentiment.settings
       - DEBUG=True
       - DB_NAME=${DB_NAME:-crypto_news}
-      - DB_USER=${DB_USER:-user}
+      - DB_USER=${DB_USER:-user1}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_HOST=db
       - DB_PORT=5432

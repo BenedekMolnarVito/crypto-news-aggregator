@@ -92,7 +92,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'crypto_news'),
-            'USER': os.getenv('DB_USER', 'user'),
+            'USER': os.getenv('DB_USER', 'user1'),
             'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
             'HOST': os.getenv('DB_HOST', 'db'),
             'PORT': os.getenv('DB_PORT', '5432'),

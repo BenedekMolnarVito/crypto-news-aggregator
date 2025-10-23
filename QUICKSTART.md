@@ -28,7 +28,7 @@ This guide will help you get the Crypto News Aggregator up and running quickly.
    
    # Database
    DB_NAME=crypto_news
-   DB_USER=user
+   DB_USER=user1
    DB_PASSWORD=postgres
    ```
 
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 # Set environment variables
 export DB_NAME=crypto_news
-export DB_USER=user
+export DB_USER=user1
 export DB_PASSWORD=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
