@@ -12,6 +12,14 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Crypto-related keywords for filtering Yahoo Finance articles
+CRYPTO_KEYWORDS = [
+    'crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain',
+    'defi', 'nft', 'coin', 'token', 'solana', 'cardano', 'polygon',
+    'dogecoin', 'shiba', 'altcoin', 'web3', 'digital currency',
+    'cryptocurrency', 'stablecoin', 'mining', 'wallet', 'exchange'
+]
+
 
 class CryptoNewsScraper:
     """Scraper for collecting crypto news from multiple sources."""
@@ -171,14 +179,10 @@ class CryptoNewsScraper:
                         continue
                     
                     # Filter for crypto-related keywords in title or URL
-                    crypto_keywords = ['crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain', 
-                                     'defi', 'nft', 'coin', 'token', 'solana', 'cardano', 'polygon',
-                                     'dogecoin', 'shiba', 'altcoin', 'web3', 'digital currency']
-                    
                     title_lower = title.lower()
                     url_lower = url.lower()
                     is_crypto_related = any(keyword in title_lower or keyword in url_lower 
-                                          for keyword in crypto_keywords)
+                                          for keyword in CRYPTO_KEYWORDS)
                     
                     if not is_crypto_related:
                         continue

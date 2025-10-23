@@ -10,7 +10,8 @@ This document summarizes the fixes applied to address the UI bugs in the crypto 
 
 **Solution:** 
 - Added keyword filtering to ensure only crypto-related articles are scraped
-- Implemented a comprehensive list of crypto keywords: `['crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain', 'defi', 'nft', 'coin', 'token', 'solana', 'cardano', 'polygon', 'dogecoin', 'shiba', 'altcoin', 'web3', 'digital currency']`
+- Extracted crypto keywords to a configuration constant `CRYPTO_KEYWORDS` for easy maintenance
+- Implemented a comprehensive list of crypto keywords including: bitcoin, ethereum, blockchain, defi, nft, token, solana, etc.
 - Filter checks both article title and URL for crypto-related keywords
 - Only articles matching crypto keywords are included in results
 
@@ -61,9 +62,10 @@ This document summarizes the fixes applied to address the UI bugs in the crypto 
 
 #### FastAPI Service (`fastapi_service/main.py`):
 - Enhanced fallback analysis when Ollama API is not available
+- Extracted sentiment keywords to configuration constants (`POSITIVE_KEYWORDS`, `NEGATIVE_KEYWORDS`)
 - Implemented keyword-based sentiment detection in fallback:
-  - Positive keywords: surge, rally, gain, bullish, positive, growth, increase, adoption, breakthrough
-  - Negative keywords: crash, fall, decline, bearish, negative, drop, loss, concern, risk
+  - Positive keywords: surge, rally, gain, bullish, positive, growth, increase, adoption, breakthrough, etc.
+  - Negative keywords: crash, fall, decline, bearish, negative, drop, loss, concern, risk, etc.
   - Returns appropriate sentiment based on detected keywords
 - Improved error handling to catch both HTTPError and ConnectError
 - Fallback provides meaningful analysis text instead of generic errors

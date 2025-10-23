@@ -13,6 +13,17 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Sentiment analysis keywords for fallback analysis
+POSITIVE_KEYWORDS = [
+    'surge', 'rally', 'gain', 'bullish', 'positive', 'growth', 'increase',
+    'adoption', 'breakthrough', 'soar', 'pump', 'moon', 'rising', 'up'
+]
+
+NEGATIVE_KEYWORDS = [
+    'crash', 'fall', 'decline', 'bearish', 'negative', 'drop', 'loss',
+    'concern', 'risk', 'plunge', 'dump', 'down', 'falling', 'fear'
+]
+
 app = FastAPI(
     title="Crypto News Sentiment Analysis API",
     description="LLM-based sentiment analysis for crypto news using Ollama",
@@ -80,9 +91,9 @@ async def analyze_with_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
         prompt_lower = prompt.lower()
         
         # Determine sentiment based on common keywords
-        if any(word in prompt_lower for word in ['surge', 'rally', 'gain', 'bullish', 'positive', 'growth', 'increase', 'adoption', 'breakthrough']):
+        if any(word in prompt_lower for word in POSITIVE_KEYWORDS):
             return "Analysis shows a positive sentiment. The market appears bullish with indicators suggesting growth potential. Key factors include increased adoption and positive price action."
-        elif any(word in prompt_lower for word in ['crash', 'fall', 'decline', 'bearish', 'negative', 'drop', 'loss', 'concern', 'risk']):
+        elif any(word in prompt_lower for word in NEGATIVE_KEYWORDS):
             return "Analysis indicates a negative sentiment. The market shows bearish signals with concerns about potential downside. Key factors include declining metrics and risk indicators."
         else:
             return "Analysis reveals a neutral sentiment. The market shows mixed signals with no clear directional bias. Investors should monitor for clearer trends before making decisions."
