@@ -38,7 +38,7 @@ services:
           memory: 512M
 
   sentiment:
-    build: ./fastapi_service
+    build: ./llm_service
     container_name: crypto_sentiment_prod
     restart: always
     environment:
@@ -169,67 +169,6 @@ docker-compose -f docker-compose.prod.yml logs -f
 docker-compose -f docker-compose.prod.yml down
 ```
 
----
-
-## Cloud Deployment
-
-### AWS Deployment (ECS)
-
-1. **Create ECR repositories**
-   ```bash
-   aws ecr create-repository --repository-name crypto-scraper
-   aws ecr create-repository --repository-name crypto-sentiment
-   aws ecr create-repository --repository-name crypto-webapp
-   ```
-
-2. **Build and push images**
-   ```bash
-   # Login to ECR
-   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
-
-   # Build and push
-   docker build -t crypto-scraper ./scraper_service
-   docker tag crypto-scraper:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/crypto-scraper:latest
-   docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/crypto-scraper:latest
-   ```
-
-3. **Create ECS task definitions and services**
-
-### Google Cloud Platform (Cloud Run)
-
-```bash
-# Build and deploy scraper
-gcloud builds submit --tag gcr.io/PROJECT_ID/crypto-scraper ./scraper_service
-gcloud run deploy crypto-scraper --image gcr.io/PROJECT_ID/crypto-scraper --platform managed
-
-# Build and deploy sentiment service
-gcloud builds submit --tag gcr.io/PROJECT_ID/crypto-sentiment ./fastapi_service
-gcloud run deploy crypto-sentiment --image gcr.io/PROJECT_ID/crypto-sentiment --platform managed
-
-# Build and deploy webapp
-gcloud builds submit --tag gcr.io/PROJECT_ID/crypto-webapp ./django_app
-gcloud run deploy crypto-webapp --image gcr.io/PROJECT_ID/crypto-webapp --platform managed
-```
-
-### Heroku Deployment
-
-```bash
-# Create apps
-heroku create crypto-scraper
-heroku create crypto-sentiment
-heroku create crypto-webapp
-
-# Deploy each service
-cd scraper_service && git push heroku main
-cd ../fastapi_service && git push heroku main
-cd ../django_app && git push heroku main
-
-# Set environment variables
-heroku config:set OLLAMA_API_URL=... --app crypto-sentiment
-heroku config:set SECRET_KEY=... --app crypto-webapp
-```
-
----
 
 ## Security Considerations
 

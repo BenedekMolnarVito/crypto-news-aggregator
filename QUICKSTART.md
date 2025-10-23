@@ -28,7 +28,7 @@ This guide will help you get the Crypto News Aggregator up and running quickly.
    
    # Database
    DB_NAME=crypto_news
-   DB_USER=postgres
+   DB_USER=user
    DB_PASSWORD=postgres
    ```
 
@@ -64,7 +64,7 @@ The scraper service will be available at http://localhost:5000
 Open a new terminal:
 
 ```bash
-cd fastapi_service
+cd llm_service
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 # Set environment variables
 export DB_NAME=crypto_news
-export DB_USER=postgres
+export DB_USER=user
 export DB_PASSWORD=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
@@ -232,7 +232,7 @@ OLLAMA_MODEL=llama2
 ## Next Steps
 
 - Customize scraping sources in `scraper_service/scraper.py`
-- Adjust sentiment prompts in `fastapi_service/main.py`
+- Adjust sentiment prompts in `llm_service/main.py`
 - Modify the dashboard UI in `django_app/news/templates/news/dashboard.html`
 - Add scheduled scraping with cron jobs or Celery
 - Deploy to production with proper secret management
