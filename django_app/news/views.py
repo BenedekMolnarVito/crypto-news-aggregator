@@ -83,11 +83,11 @@ class AnalyzeSentimentView(View):
                 'count': len(results)
             })
         except Exception as e:
-            error_msg = str(e)
-            logger.error(f"Error analyzing sentiment: {error_msg}", exc_info=True)
+            logger.error(f"Error analyzing sentiment: {str(e)}", exc_info=True)
+            # Don't expose detailed error messages to users for security
             return JsonResponse({
                 'success': False,
-                'error': f'Failed to analyze sentiment: {error_msg}'
+                'error': 'Failed to analyze sentiment. Please try again or contact support.'
             }, status=500)
 
 
