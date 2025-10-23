@@ -208,3 +208,7 @@ __marimo__/
 
 # Project specific
 *.sqlite3
+
+# Temporary test files
+test_scraper_fixes.py
+test_sentiment_fixes.py

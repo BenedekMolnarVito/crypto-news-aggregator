@@ -82,6 +82,12 @@ class SentimentService:
                 json={'articles': articles_data},
                 timeout=60
             )
+            
+            # Check if response is successful
+            if response.status_code != 200:
+                logger.error(f"Sentiment service returned status {response.status_code}: {response.text}")
+                raise Exception(f"Sentiment service error: {response.status_code}")
+            
             response.raise_for_status()
             
             data = response.json()
@@ -103,8 +109,17 @@ class SentimentService:
             
             return results
         
+        except requests.ConnectionError as e:
+            logger.error(f"Cannot connect to sentiment service at {self.sentiment_url}: {e}")
+            raise Exception(f"Cannot connect to sentiment analysis service. Please ensure it is running at {self.sentiment_url}")
+        except requests.Timeout as e:
+            logger.error(f"Sentiment service timeout: {e}")
+            raise Exception("Sentiment analysis service timed out. Please try again.")
         except requests.RequestException as e:
             logger.error(f"Error calling sentiment service: {e}")
+            raise Exception(f"Error communicating with sentiment service: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error in sentiment analysis: {e}")
             raise
     
     def _save_sentiment_analysis(self, data):
