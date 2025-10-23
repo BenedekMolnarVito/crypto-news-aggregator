@@ -108,10 +108,11 @@ All tests pass successfully (8/8 tests).
 
 ## Summary of Changes
 
-- **5 files modified**
-- **120 lines added, 14 lines removed**
+- **6 files modified**
+- **130+ lines added, 20+ lines removed**
 - **0 new dependencies added**
 - **All changes are backward compatible**
+- **1 security vulnerability fixed**
 
 ## User-Facing Improvements
 
@@ -127,3 +128,12 @@ All tests pass successfully (8/8 tests).
 - The sentiment analysis fallback uses keyword detection to provide reasonable sentiment even without LLM
 - All changes maintain the existing API contracts and database schema
 - No breaking changes to the existing codebase
+- Security: Fixed stack trace exposure vulnerability to prevent leaking implementation details to users
+
+## Security Summary
+
+**Issue Found and Fixed:**
+- **py/stack-trace-exposure**: Error messages in sentiment analysis view were exposing detailed exception information to external users
+- **Fix**: Changed error response to use generic error message while logging detailed information server-side only
+- **Impact**: Prevents potential attackers from learning about internal implementation details through error messages
+- **Verification**: CodeQL security scan shows 0 alerts after fix
