@@ -35,12 +35,30 @@ class CryptoNewsScraper:
             soup = BeautifulSoup(response.content, 'html.parser')
             
             articles = []
-            # Find article elements - CoinDesk uses specific CSS classes
-            article_elements = soup.find_all('a', class_='card-title-link', limit=5)
+            # Find article elements - CoinDesk uses multiple possible selectors
+            # Try multiple selectors to be more robust
+            article_elements = soup.find_all('a', class_='card-title-link', limit=10)
+            
+            # If the first selector doesn't work, try alternative selectors
+            if not article_elements:
+                article_elements = soup.find_all('a', class_=['card-title', 'articleTextLink'], limit=10)
+            
+            # Try finding article or div containers with links
+            if not article_elements:
+                containers = soup.find_all(['article', 'div'], class_=lambda x: x and ('card' in x.lower() or 'article' in x.lower()), limit=10)
+                for container in containers:
+                    link = container.find('a', href=True)
+                    if link:
+                        article_elements.append(link)
             
             for element in article_elements:
                 title = element.get_text(strip=True)
                 url = element.get('href', '')
+                
+                # Skip if title is too short
+                if len(title) < 20:
+                    continue
+                
                 if not url.startswith('http'):
                     url = 'https://www.coindesk.com' + url
                 
@@ -54,6 +72,10 @@ class CryptoNewsScraper:
                     'text': article_text,
                     'scraped_at': datetime.now().isoformat()
                 })
+                
+                # Stop once we have 5 articles
+                if len(articles) >= 5:
+                    break
             
             logger.info(f"Scraped {len(articles)} articles from CoinDesk")
             return articles
@@ -71,13 +93,31 @@ class CryptoNewsScraper:
             
             articles = []
             # Find article elements - CoinTelegraph uses specific structure
-            article_elements = soup.find_all('article', class_='post-card-inline', limit=5)
+            # Try multiple selectors to be more robust
+            article_elements = soup.find_all('article', class_='post-card-inline', limit=10)
+            
+            # If the first selector doesn't work, try alternatives
+            if not article_elements:
+                article_elements = soup.find_all(['article', 'div'], class_=lambda x: x and ('post-card' in x.lower() or 'article' in x.lower()), limit=10)
             
             for element in article_elements:
                 title_elem = element.find('a', class_='post-card-inline__title-link')
+                
+                # Try alternative selectors if the first one doesn't work
+                if not title_elem:
+                    title_elem = element.find('a', class_=lambda x: x and 'title' in x.lower())
+                
+                if not title_elem:
+                    title_elem = element.find('a', href=True)
+                
                 if title_elem:
                     title = title_elem.get_text(strip=True)
                     url = title_elem.get('href', '')
+                    
+                    # Skip if title is too short
+                    if len(title) < 20:
+                        continue
+                    
                     if not url.startswith('http'):
                         url = 'https://cointelegraph.com' + url
                     
@@ -91,6 +131,10 @@ class CryptoNewsScraper:
                         'text': article_text,
                         'scraped_at': datetime.now().isoformat()
                     })
+                    
+                    # Stop once we have 5 articles
+                    if len(articles) >= 5:
+                        break
             
             logger.info(f"Scraped {len(articles)} articles from CoinTelegraph")
             return articles
@@ -107,14 +151,38 @@ class CryptoNewsScraper:
             soup = BeautifulSoup(response.content, 'html.parser')
             
             articles = []
-            # Find article elements - Yahoo Finance uses specific structure
-            article_elements = soup.find_all('h3', limit=5)
+            # Find article elements - Yahoo Finance crypto section uses specific structure
+            # Look for h3 tags within article or list items that are within the crypto topic section
+            article_containers = soup.find_all(['li', 'article'], limit=20)
             
-            for element in article_elements:
-                link_elem = element.find('a')
+            for container in article_containers:
+                # Find h3 or h2 within the container
+                heading = container.find(['h3', 'h2'])
+                if not heading:
+                    continue
+                
+                link_elem = heading.find('a')
                 if link_elem:
                     title = link_elem.get_text(strip=True)
                     url = link_elem.get('href', '')
+                    
+                    # Skip if title is too short or doesn't seem crypto-related
+                    if len(title) < 20:
+                        continue
+                    
+                    # Filter for crypto-related keywords in title or URL
+                    crypto_keywords = ['crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'blockchain', 
+                                     'defi', 'nft', 'coin', 'token', 'solana', 'cardano', 'polygon',
+                                     'dogecoin', 'shiba', 'altcoin', 'web3', 'digital currency']
+                    
+                    title_lower = title.lower()
+                    url_lower = url.lower()
+                    is_crypto_related = any(keyword in title_lower or keyword in url_lower 
+                                          for keyword in crypto_keywords)
+                    
+                    if not is_crypto_related:
+                        continue
+                    
                     if url.startswith('/'):
                         url = 'https://finance.yahoo.com' + url
                     elif not url.startswith('http'):
@@ -130,6 +198,10 @@ class CryptoNewsScraper:
                         'text': article_text,
                         'scraped_at': datetime.now().isoformat()
                     })
+                    
+                    # Stop once we have 5 articles
+                    if len(articles) >= 5:
+                        break
             
             logger.info(f"Scraped {len(articles)} articles from Yahoo Finance")
             return articles
