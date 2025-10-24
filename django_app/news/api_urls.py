@@ -14,5 +14,6 @@ urlpatterns = [
     path('scrape/', views.ScrapeNewsView.as_view(), name='api-scrape'),
     path('analyze/', views.AnalyzeSentimentView.as_view(), name='api-analyze'), 
     path('articles/', views.ArticleListView.as_view(), name='api-articles'),
+    path('articles/clear/', views.ClearArticlesView.as_view(), name='api-clear-articles'),
     path('stats/', views.SentimentStatsView.as_view(), name='api-stats'),
 ]

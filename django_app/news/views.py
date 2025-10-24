@@ -102,18 +102,16 @@ class AnalyzeSentimentView(APIView):
         try:
             sentiment_service = SentimentService()
             
-            # Get unanalyzed articles
-            # unanalyzed_articles = NewsArticle.objects.filter(sentiment__isnull=True)[:10]
-            unanalyzed_articles = NewsArticle.objects.all()
-            
-            # if not unanalyzed_articles:
-            #     return Response({
-            #         'success': True,
-            #         'message': 'No articles to analyze'
-            #     })
-            
+            articles_to_analyze = NewsArticle.objects.filter(scraped_at__date=timezone.now().date())
+
+            if not articles_to_analyze:
+                return Response({
+                    'success': True,
+                    'message': 'No articles to analyze'
+                })
+
             # Analyze articles
-            results = sentiment_service.analyze_articles(list(unanalyzed_articles))
+            results = sentiment_service.analyze_articles(list(articles_to_analyze))
             
             return Response({
                 'success': True,
@@ -228,4 +226,49 @@ class SentimentStatsView(APIView):
                 'market_outlook': recent_analysis.market_outlook if recent_analysis else None,
             } if recent_analysis else None
         })
+
+
+class ClearArticlesView(APIView):
+    """API view to clear all articles from the database."""
+    permission_classes = [AllowAny]
+    
+    @swagger_auto_schema(
+        operation_description="Delete all articles and sentiment analysis data from the database",
+        tags=['Articles Management'],
+        responses={
+            200: openapi.Response('Success', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'success': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    'deleted_count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                }
+            )),
+            500: 'Internal Server Error'
+        }
+    )
+    def post(self, request):
+        try:
+            # Count articles before deletion
+            article_count = NewsArticle.objects.count()
+            sentiment_count = SentimentAnalysis.objects.count()
+            
+            # Delete all articles and sentiment analysis
+            NewsArticle.objects.all().delete()
+            SentimentAnalysis.objects.all().delete()
+            
+            logger.info(f"Cleared {article_count} articles and {sentiment_count} sentiment analyses")
+            
+            return Response({
+                'success': True,
+                'message': f'Successfully cleared {article_count} articles',
+                'deleted_count': article_count
+            })
+        except Exception as e:
+            logger.error(f"Error clearing articles: {e}")
+            return Response({
+                'success': False,
+                'error': 'Failed to clear articles'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 

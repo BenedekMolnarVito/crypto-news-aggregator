@@ -44,6 +44,7 @@
         <div class="actions">
             <button onclick="scrapeNews()">Scrape Latest News</button>
             <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+            <button onclick="clearArticles()" style="background-color: #dc3545;">Clear Articles</button>
             <button onclick="location.reload()">Refresh</button>
         </div>
         
@@ -78,7 +79,7 @@
                     {% endif %}
                     {% if article.summary %}
                     <div style="color: #666; font-size: 14px; margin-top: 10px;">
-                        {{ article.summary|truncatewords:30 }}
+                        {{ article.summary }}
                     </div>
                     {% endif %}
                 </div>
@@ -140,6 +141,31 @@
                 }
             } catch (error) {
                 showMessage('Error analyzing sentiment: ' + error.message, 'error');
+            }
+        }
+        
+        async function clearArticles() {
+            if (!confirm('Are you sure you want to delete all articles? This action cannot be undone.')) {
+                return;
+            }
+            
+            showMessage('Clearing all articles...', 'info');
+            try {
+                const response = await fetch('/api/articles/clear/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error clearing articles: ' + error.message, 'error');
             }
         }
         

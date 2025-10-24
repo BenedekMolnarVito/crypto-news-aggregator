@@ -77,10 +77,11 @@ class SentimentService:
             } for article in articles]
             
             # Call sentiment analysis service
+            # Extended timeout to 300 seconds to handle analysis of multiple articles (15+)
             response = requests.post(
                 f'{self.sentiment_url}/analyze',
                 json={'articles': articles_data},
-                timeout=60
+                timeout=300
             )
             
             # Check if response is successful
