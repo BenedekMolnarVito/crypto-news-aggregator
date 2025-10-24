@@ -1,0 +1,74 @@
+services:
+  # Scraper Service Debug Configuration
+  scraper:
+    build:
+      context: ./scraper_service
+      dockerfile: Dockerfile.debug
+    container_name: crypto_scraper_debug
+    ports:
+      - "5000:5000"
+      - "5679:5679"  # Debug port for scraper
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=true
+      - PYTHONPATH=/app
+    volumes:
+      - ./scraper_service:/app  # Mount source code for live reloading
+    command: python -m debugpy --listen 0.0.0.0:5679 --wait-for-client app.py
+    networks:
+      - crypto_network
+    restart: "no"
+
+  # LLM Service Debug Configuration
+  sentiment:
+    build:
+      context: ./llm_service
+      dockerfile: Dockerfile.debug
+    container_name: crypto_sentiment_debug
+    ports:
+      - "8001:8000"
+      - "5678:5678"  # Debug port for sentiment
+    environment:
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-https://ollama.com}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-v3.1:671b-cloud}
+      - PYTHONPATH=/app
+    volumes:
+      - ./llm_service:/app  # Mount source code for live reloading
+    command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - crypto_network
+    restart: "no"
+
+  # Django Web App Debug Configuration
+  webapp:
+    build:
+      context: ./django_app
+      dockerfile: Dockerfile.debug
+    container_name: crypto_webapp_debug
+    ports:
+      - "8000:8080"
+      - "5680:5680"  # Debug port for Django
+    environment:
+      - SCRAPER_SERVICE_URL=http://scraper:5000
+      - SENTIMENT_SERVICE_URL=http://sentiment:8000
+      - DJANGO_SETTINGS_MODULE=crypto_sentiment.settings
+      - DEBUG=True
+      - DB_NAME=${DB_NAME:-crypto_news}
+      - DB_USER=${DB_USER:-user1}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - PYTHONPATH=/app
+    volumes:
+      - ./django_app:/app  # Mount source code for live reloading
+    command: python -m debugpy --listen 0.0.0.0:5680 --wait-for-client manage.py runserver 0.0.0.0:8080
+    depends_on:
+      db:
+        condition: service_healthy
+      scraper:
+        condition: service_started
+      sentiment:
+        condition: service_started
+    networks:
+      - crypto_network
+    restart: "no"

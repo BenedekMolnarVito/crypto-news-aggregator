@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y netcat-traditional && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies including debugpy
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt debugpy
+
+# Copy entrypoint script first and fix line endings
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Copy application code
+COPY . .
+
+# Expose port for application and debugger
+EXPOSE 8080 5680
+
+# Default debug command (can be overridden)
+CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5680", "--wait-for-client", "manage.py", "runserver", "0.0.0.0:8080"]

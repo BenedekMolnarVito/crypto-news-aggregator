@@ -95,5 +95,21 @@ def scrape_yahoo():
 
 
 if __name__ == '__main__':
-    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
+    import sys
+    
+    # Check if we should enable debug mode
+    debug_mode = "--debug" in sys.argv or os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    port = int(os.getenv('PORT', '5000'))
+    
+    if debug_mode:
+        logger.info("Starting Flask in DEBUG mode...")
+        # Enable auto-reload for development
+        app.run(
+            host='0.0.0.0', 
+            port=port, 
+            debug=True,
+            use_reloader=True,
+            use_debugger=True
+        )
+    else:
+        app.run(host='0.0.0.0', port=port, debug=debug_mode)

@@ -246,4 +246,22 @@ async def list_models():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import sys
+    
+    # Check if we should enable debug mode
+    debug_mode = "--debug" in sys.argv or os.getenv("DEBUG_MODE", "false").lower() == "true"
+    port = int(os.getenv("PORT", "8000"))
+    
+    if debug_mode:
+        logger.info("Starting in DEBUG mode...")
+        # Enable auto-reload for development
+        uvicorn.run(
+            "main:app", 
+            host="0.0.0.0", 
+            port=port, 
+            reload=True, 
+            debug=True,
+            log_level="debug"
+        )
+    else:
+        uvicorn.run(app, host="0.0.0.0", port=port)
