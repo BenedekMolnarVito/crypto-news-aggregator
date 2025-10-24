@@ -103,13 +103,14 @@ class AnalyzeSentimentView(APIView):
             sentiment_service = SentimentService()
             
             # Get unanalyzed articles
-            unanalyzed_articles = NewsArticle.objects.filter(sentiment__isnull=True)[:10]
+            # unanalyzed_articles = NewsArticle.objects.filter(sentiment__isnull=True)[:10]
+            unanalyzed_articles = NewsArticle.objects.all()
             
-            if not unanalyzed_articles:
-                return Response({
-                    'success': True,
-                    'message': 'No articles to analyze'
-                })
+            # if not unanalyzed_articles:
+            #     return Response({
+            #         'success': True,
+            #         'message': 'No articles to analyze'
+            #     })
             
             # Analyze articles
             results = sentiment_service.analyze_articles(list(unanalyzed_articles))
