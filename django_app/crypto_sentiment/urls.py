@@ -16,8 +16,37 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+# Import the API URLs to make sure they're available for schema generation
+from news import api_urls
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Crypto News Sentiment API",
+      default_version='v1',
+      description="API for crypto news scraping and sentiment analysis. No authentication required for development.",
+      contact=openapi.Contact(email="contact@cryptosentiment.local"),
+      license=openapi.License(name="MIT License"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+   authentication_classes=[],  # Explicitly disable authentication
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('news.urls')),
+    path('api/', include('news.api_urls')),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('api/schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]
+
+# Serve static files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

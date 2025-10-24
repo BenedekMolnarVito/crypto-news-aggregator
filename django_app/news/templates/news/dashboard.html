@@ -44,10 +44,22 @@
         <div class="actions">
             <button onclick="scrapeNews()">Scrape Latest News</button>
             <button onclick="analyzeSentiment()">Analyze Sentiment</button>
+            <button onclick="clearArticles()" style="background-color: #dc3545;">Clear Articles</button>
             <button onclick="location.reload()">Refresh</button>
         </div>
         
         <div id="message" class="message"></div>
+        
+        <!-- Progress Bar Section -->
+        <div id="progressSection" class="progress-section" style="display: none;">
+            <div class="progress-content">
+                <div class="progress-icon">⏳</div>
+                <div class="progress-text" id="progressText">Processing...</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
         
         <div class="articles-section">
             <h2 style="margin-bottom: 20px; color: #333;">Latest Articles</h2>
@@ -78,7 +90,7 @@
                     {% endif %}
                     {% if article.summary %}
                     <div style="color: #666; font-size: 14px; margin-top: 10px;">
-                        {{ article.summary|truncatewords:30 }}
+                        {{ article.summary }}
                     </div>
                     {% endif %}
                 </div>
@@ -101,8 +113,45 @@
             }, 5000);
         }
         
+        function showProgress(text) {
+            const progressSection = document.getElementById('progressSection');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            
+            progressText.textContent = text;
+            progressSection.style.display = 'block';
+            progressBar.style.width = '0%';
+            
+            // Animate progress bar
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 90) {
+                    clearInterval(interval);
+                } else {
+                    width += 2;
+                    progressBar.style.width = width + '%';
+                }
+            }, 100);
+            
+            return interval;
+        }
+        
+        function hideProgress(interval) {
+            const progressSection = document.getElementById('progressSection');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (interval) clearInterval(interval);
+            progressBar.style.width = '100%';
+            
+            setTimeout(() => {
+                progressSection.style.display = 'none';
+                progressBar.style.width = '0%';
+            }, 500);
+        }
+        
         async function scrapeNews() {
-            showMessage('Scraping news articles...', 'info');
+            const interval = showProgress('Scraping News...');
+            
             try {
                 const response = await fetch('/api/scrape/', {
                     method: 'POST',
@@ -111,6 +160,9 @@
                     }
                 });
                 const data = await response.json();
+                
+                hideProgress(interval);
+                
                 if (data.success) {
                     showMessage(`Successfully scraped ${data.count} articles!`, 'success');
                     setTimeout(() => location.reload(), 2000);
@@ -118,12 +170,14 @@
                     showMessage('Error: ' + data.error, 'error');
                 }
             } catch (error) {
+                hideProgress(interval);
                 showMessage('Error scraping news: ' + error.message, 'error');
             }
         }
         
         async function analyzeSentiment() {
-            showMessage('Analyzing sentiment...', 'info');
+            const interval = showProgress('Analyzing Market Sentiment...');
+            
             try {
                 const response = await fetch('/api/analyze/', {
                     method: 'POST',
@@ -132,6 +186,9 @@
                     }
                 });
                 const data = await response.json();
+                
+                hideProgress(interval);
+                
                 if (data.success) {
                     showMessage(data.message, 'success');
                     setTimeout(() => location.reload(), 2000);
@@ -139,7 +196,38 @@
                     showMessage('Error: ' + data.error, 'error');
                 }
             } catch (error) {
+                hideProgress(interval);
                 showMessage('Error analyzing sentiment: ' + error.message, 'error');
+            }
+        }
+        
+        async function clearArticles() {
+            if (!confirm('Are you sure you want to delete all articles? This action cannot be undone.')) {
+                return;
+            }
+            
+            const interval = showProgress('Clearing Articles...');
+            
+            try {
+                const response = await fetch('/api/articles/clear/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                const data = await response.json();
+                
+                hideProgress(interval);
+                
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                hideProgress(interval);
+                showMessage('Error clearing articles: ' + error.message, 'error');
             }
         }
         

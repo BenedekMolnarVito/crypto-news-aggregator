@@ -95,7 +95,7 @@ python app.py
 #### 2. Set up Sentiment Analysis Service
 
 ```bash
-cd fastapi_service
+cd llm_service
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
@@ -166,7 +166,7 @@ crypto-news-aggregator/
 │   ├── requirements.txt     # Dependencies
 │   └── Dockerfile           # Container configuration
 │
-├── fastapi_service/          # Sentiment analysis microservice
+├── llm_service/          # Sentiment analysis microservice
 │   ├── main.py              # FastAPI application
 │   ├── requirements.txt     # Dependencies
 │   └── Dockerfile           # Container configuration
@@ -238,7 +238,7 @@ curl http://localhost:8080/api/stats/
 
 ### Customizing Sentiment Analysis
 
-1. Modify prompts in `fastapi_service/main.py`
+1. Modify prompts in `llm_service/main.py`
 2. Change Ollama model in environment variables
 3. Adjust parsing logic for different response formats
 

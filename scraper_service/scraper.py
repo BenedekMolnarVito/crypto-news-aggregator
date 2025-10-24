@@ -26,8 +26,8 @@ class CryptoNewsScraper:
     
     def __init__(self):
         self.sources = {
-            'coindesk': 'https://www.coindesk.com/',
-            'cointelegraph': 'https://cointelegraph.com/',
+            'coindesk': 'https://www.coindesk.com/latest-crypto-news',
+            'cointelegraph': 'https://cointelegraph.com/category/latest-news',
             'yahoo_finance': 'https://finance.yahoo.com/topic/crypto/?guccounter=1'
         }
         self.headers = {
@@ -45,7 +45,8 @@ class CryptoNewsScraper:
             articles = []
             # Find article elements - CoinDesk uses multiple possible selectors
             # Try multiple selectors to be more robust
-            article_elements = soup.find_all('a', class_='card-title-link', limit=10)
+            # 
+            article_elements = soup.find_all('a', class_='content-card-title', limit=10)
             
             # If the first selector doesn't work, try alternative selectors
             if not article_elements:
@@ -102,7 +103,7 @@ class CryptoNewsScraper:
             articles = []
             # Find article elements - CoinTelegraph uses specific structure
             # Try multiple selectors to be more robust
-            article_elements = soup.find_all('article', class_='post-card-inline', limit=10)
+            article_elements = soup.find_all('div', class_='post-card-inline__header', limit=10)
             
             # If the first selector doesn't work, try alternatives
             if not article_elements:
@@ -160,16 +161,15 @@ class CryptoNewsScraper:
             
             articles = []
             # Find article elements - Yahoo Finance crypto section uses specific structure
-            # Look for h3 tags within article or list items that are within the crypto topic section
-            article_containers = soup.find_all(['li', 'article'], limit=20)
+            article_containers = soup.find_all('div', class_='content yf-lfbf5f', limit=20)
             
             for container in article_containers:
                 # Find h3 or h2 within the container
-                heading = container.find(['h3', 'h2'])
-                if not heading:
-                    continue
-                
-                link_elem = heading.find('a')
+                # heading = container.find(['h3', 'h2'])
+                # if not heading:
+                #     continue
+
+                link_elem = container.find('a', class_='subtle-link')
                 if link_elem:
                     title = link_elem.get_text(strip=True)
                     url = link_elem.get('href', '')

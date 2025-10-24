@@ -6,11 +6,19 @@ Provides endpoints for analyzing crypto news sentiment.
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
-import httpx
+from ollama import Client
+from dotenv import load_dotenv
 import os
 import logging
 
-logging.basicConfig(level=logging.INFO)
+# Load environment variables based on debug mode
+if os.getenv("DEBUG_MODE", "false").lower() == "true":
+    load_dotenv('.env.development')
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    load_dotenv('.env')
+    logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 # Sentiment analysis keywords for fallback analysis
@@ -31,8 +39,19 @@ app = FastAPI(
 )
 
 # Ollama Cloud configuration
-OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "https://api.ollama.ai/api/generate")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama2")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "0a12077bef834a34a6fa586ed8a2ebbb.JgpNeR9YeYZEFw6bZqoCZcnb")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "deepseek-v3.1:671b-cloud")
+
+logger.info(f"Loaded OLLAMA_HOST: {OLLAMA_HOST}")
+logger.info(f"Loaded OLLAMA_MODEL: {OLLAMA_MODEL}")
+logger.info(f"API Key present: {bool(OLLAMA_API_KEY)}")
+
+# Initialize Ollama client
+ollama_client = Client(
+    host=OLLAMA_HOST,
+    headers={'Authorization': f'Bearer {OLLAMA_API_KEY}'} if OLLAMA_API_KEY else {}
+)
 
 
 class Article(BaseModel):
@@ -66,25 +85,31 @@ class SentimentResponse(BaseModel):
 
 
 async def analyze_with_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
-    """Send a request to Ollama Cloud API."""
+    """Send a request to Ollama Cloud API using Ollama Client."""
     try:
-        # Check if we're using a local Ollama instance (default) or cloud API
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                OLLAMA_API_URL,
-                json={
-                    "model": model,
-                    "prompt": prompt,
-                    "stream": False
-                },
-                headers={
-                    "Content-Type": "application/json"
-                }
-            )
-            response.raise_for_status()
-            result = response.json()
-            return result.get("response", "")
-    except (httpx.HTTPError, httpx.ConnectError) as e:
+        # Create messages for chat completion
+        messages = [
+            {
+                'role': 'user',
+                'content': prompt,
+            }
+        ]
+        
+        # Call Ollama chat API (non-streaming)
+        response = ollama_client.chat(
+            model=model,
+            messages=messages,
+            stream=False
+        )
+        
+        # Extract content from response
+        if response and 'message' in response and 'content' in response['message']:
+            return response['message']['content']
+        else:
+            logger.warning("Unexpected response format from Ollama")
+            return ""
+            
+    except Exception as e:
         logger.warning(f"Ollama API not available: {e}. Using fallback analysis.")
         # Enhanced fallback for development/testing when Ollama is not available
         # Analyze based on keywords in the prompt
@@ -97,9 +122,6 @@ async def analyze_with_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
             return "Analysis indicates a negative sentiment. The market shows bearish signals with concerns about potential downside. Key factors include declining metrics and risk indicators."
         else:
             return "Analysis reveals a neutral sentiment. The market shows mixed signals with no clear directional bias. Investors should monitor for clearer trends before making decisions."
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        return "Neutral market sentiment detected. Analysis indicates balanced market conditions with no strong directional bias."
 
 
 def parse_sentiment_response(response: str) -> Dict:
@@ -246,4 +268,22 @@ async def list_models():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import sys
+    
+    # Check if we should enable debug mode
+    debug_mode = "--debug" in sys.argv or os.getenv("DEBUG_MODE", "false").lower() == "true"
+    port = int(os.getenv("PORT", "8000"))
+    
+    if debug_mode:
+        logger.info("Starting in DEBUG mode...")
+        # Enable auto-reload for development
+        uvicorn.run(
+            "main:app", 
+            host="0.0.0.0", 
+            port=port, 
+            reload=True, 
+            debug=True,
+            log_level="debug"
+        )
+    else:
+        uvicorn.run(app, host="0.0.0.0", port=port)

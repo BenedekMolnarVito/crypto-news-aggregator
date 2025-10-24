@@ -15,8 +15,8 @@ class CryptoNewsAggregatorTest:
     
     def __init__(self):
         self.scraper_url = "http://localhost:5000"
-        self.sentiment_url = "http://localhost:8000"
-        self.webapp_url = "http://localhost:8080"
+        self.sentiment_url = "http://localhost:8001"
+        self.webapp_url = "http://localhost:8000"
     
     def check_services(self) -> Dict[str, bool]:
         """Check if all services are running."""

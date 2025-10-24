@@ -1,0 +1,148 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Remote Attach (LLM Service)",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/llm_service",
+                    "remoteRoot": "/app"
+                }
+            ],
+            "justMyCode": false,
+            "django": false
+        },
+        {
+            "name": "Python: Remote Attach (Scraper Service)",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5679
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/scraper_service",
+                    "remoteRoot": "/app"
+                }
+            ],
+            "justMyCode": false,
+            "django": false
+        },
+        {
+            "name": "Python: Remote Attach (Django Web App)",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5680
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/django_app",
+                    "remoteRoot": "/app"
+                }
+            ],
+            "justMyCode": false,
+            "django": true
+        },
+        {
+            "name": "Python: Local Development (LLM Service)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/llm_service/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/llm_service",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/llm_service",
+                "OLLAMA_API_URL": "https://ollama.com",
+                "OLLAMA_MODEL": "deepseek-v3.1:671b-cloud"
+            },
+            "args": []
+        },
+        {
+            "name": "Flask: Local Development (Scraper Service)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scraper_service/app.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/scraper_service",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/scraper_service",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "true"
+            },
+            "args": []
+        },
+        {
+            "name": "Django: Local Development (Web App)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/django_app/manage.py",
+            "args": ["runserver", "0.0.0.0:8000"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/django_app",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/django_app",
+                "DJANGO_SETTINGS_MODULE": "crypto_sentiment.settings",
+                "DEBUG": "True",
+                "DB_HOST": "localhost",
+                "DB_PORT": "5432",
+                "DB_NAME": "crypto_news",
+                "DB_USER": "user1",
+                "DB_PASSWORD": "postgres",
+                "SCRAPER_SERVICE_URL": "http://localhost:5000",
+                "SENTIMENT_SERVICE_URL": "http://localhost:8001"
+            },
+            "django": true
+        },
+        {
+            "name": "FastAPI: Local Development",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "main:app",
+                "--host", "0.0.0.0",
+                "--port", "8001",
+                "--reload"
+            ],
+            "cwd": "${workspaceFolder}/llm_service",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/llm_service",
+                "OLLAMA_API_URL": "https://ollama.com",
+                "OLLAMA_MODEL": "deepseek-v3.1:671b-cloud"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug All Services (Docker)",
+            "configurations": [
+                "Python: Remote Attach (LLM Service)",
+                "Python: Remote Attach (Scraper Service)",
+                "Python: Remote Attach (Django Web App)"
+            ],
+            "stopAll": true,
+            "preLaunchTask": "Start All Services (Docker Debug)"
+        },
+        {
+            "name": "Debug All Services (Local)",
+            "configurations": [
+                "FastAPI: Local Development",
+                "Flask: Local Development (Scraper Service)",
+                "Django: Local Development (Web App)"
+            ],
+            "stopAll": true,
+            "preLaunchTask": "Start Database Only"
+        }
+    ]
+}

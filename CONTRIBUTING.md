@@ -77,7 +77,7 @@ Thank you for your interest in contributing! This document provides guidelines f
    pip install -r requirements.txt
    
    # Sentiment service
-   cd ../fastapi_service
+   cd ../llm_service
    pip install -r requirements.txt
    
    # Django app
@@ -318,7 +318,7 @@ def scrape_new_source(self) -> List[Dict[str, str]]:
 
 ### Improving Sentiment Analysis
 
-Modify the prompts in `fastapi_service/main.py`:
+Modify the prompts in `llm_service/main.py`:
 
 ```python
 prompt = f"""Analyze the crypto news article with focus on:
