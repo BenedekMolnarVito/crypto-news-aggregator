@@ -1,0 +1,94 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: crypto_postgres
+    environment:
+      - POSTGRES_DB=${DB_NAME:-crypto_news}
+      - POSTGRES_USER=${DB_USER:-user1}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - crypto_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user1 -d crypto_news"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scraper:
+    build: ./scraper_service
+    container_name: crypto_scraper
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+  sentiment:
+    build: ./llm_service
+    container_name: crypto_sentiment_api
+    ports:
+      - "8001:8000"
+    environment:
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-https://ollama.com}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-v3.1:671b-cloud}
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+  webapp:
+    build: ./django_app
+    container_name: crypto_webapp
+    ports:
+      - "8000:8080"
+    environment:
+      - SCRAPER_SERVICE_URL=http://scraper:5000
+      - SENTIMENT_SERVICE_URL=http://sentiment:8000
+      - DJANGO_SETTINGS_MODULE=crypto_sentiment.settings
+      - DEBUG=True
+      - DB_NAME=${DB_NAME:-crypto_news}
+      - DB_USER=${DB_USER:-user1}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+      scraper:
+        condition: service_started
+      sentiment:
+        condition: service_started
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: crypto_nginx
+    ports:
+      - "8888:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - webapp
+      - scraper
+      - sentiment
+    networks:
+      - crypto_network
+    restart: unless-stopped
+
+networks:
+  crypto_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  nginx_logs:

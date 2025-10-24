@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies including debugpy
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt debugpy
+
+# Copy application code
+COPY . .
+
+# Expose port for application and debugger
+EXPOSE 5000 5679
+
+# Default command (can be overridden)
+CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5679", "--wait-for-client", "app.py"]

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto News Aggregator - AI Market Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .action-button:active {
+            transform: translateY(-1px);
+        }
+
+        .action-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .button-icon {
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            min-height: 200px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .news-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .news-item:hover {
+            transform: translateX(5px);
+        }
+
+        .news-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .news-timestamp {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .analysis-text {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .success-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Crypto News Aggregator</h1>
+        <p class="subtitle">AI-Powered Market Analysis & Price Predictions</p>
+
+        <div class="button-grid">
+            <button class="action-button" id="scrapeBtn" onclick="scrapeNews()">
+                <span class="button-icon">📰</span>
+                <span>Scrape Latest News</span>
+            </button>
+
+            <button class="action-button" id="sentimentBtn" onclick="analyzeSentiment()">
+                <span class="button-icon">📊</span>
+                <span>Analyze Market Sentiment</span>
+            </button>
+
+            <button class="action-button" id="predictBtn" onclick="predictPrices()">
+                <span class="button-icon">💰</span>
+                <span>Predict Prices (BTC, ETH, SOL)</span>
+            </button>
+        </div>
+
+        <div id="newsResults" class="results-section">
+            <h2 class="results-title">Latest Crypto News</h2>
+            <div id="newsContent"></div>
+        </div>
+
+        <div id="sentimentResults" class="results-section">
+            <h2 class="results-title">Market Sentiment Analysis</h2>
+            <div id="sentimentContent"></div>
+        </div>
+
+        <div id="predictionResults" class="results-section">
+            <h2 class="results-title">Price Predictions - Next 24 Hours</h2>
+            <div id="predictionContent"></div>
+        </div>
+
+        <div class="footer">
+            Powered by Ollama AI | Built with ❤️ for Crypto Enthusiasts
+        </div>
+    </div>
+
+    <script>
+        let scrapedNews = [];
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+            // Also show the parent results section
+            element.parentElement.classList.add('active');
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="error">❌ ${message}</div>`;
+            // Also show the parent results section
+            element.parentElement.classList.add('active');
+        }
+
+        async function scrapeNews() {
+            const btn = document.getElementById('scrapeBtn');
+            btn.disabled = true;
+            showLoading('newsContent');
+
+            try {
+                const response = await fetch('/scrape');
+                const data = await response.json();
+
+                if (data.success) {
+                    scrapedNews = data.data;
+                    const newsHtml = data.data.map(item => `
+                        <div class="news-item">
+                            <div class="news-title">${item.title}</div>
+                            <div class="news-timestamp">⏰ ${item.timestamp}</div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('newsContent').innerHTML = `
+                        <div class="success-badge">✅ Found ${data.count} news articles</div>
+                        ${newsHtml}
+                    `;
+                } else {
+                    showError('newsContent', data.error);
+                }
+            } catch (error) {
+                showError('newsContent', `Failed to scrape news: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function analyzeSentiment() {
+            if (scrapedNews.length === 0) {
+                showError('sentimentContent', 'Please scrape news first!');
+                return;
+            }
+
+            const btn = document.getElementById('sentimentBtn');
+            btn.disabled = true;
+            showLoading('sentimentContent');
+
+            try {
+                const newsTexts = scrapedNews.map(item => item.title);
+                const response = await fetch('/analyze-sentiment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ news_texts: newsTexts })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('sentimentContent').innerHTML = `
+                        <div class="success-badge">✅ Analysis Complete</div>
+                        <div class="analysis-text">${data.sentiment}</div>
+                    `;
+                } else {
+                    showError('sentimentContent', data.error);
+                }
+            } catch (error) {
+                showError('sentimentContent', `Failed to analyze sentiment: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function predictPrices() {
+            const btn = document.getElementById('predictBtn');
+            btn.disabled = true;
+            showLoading('predictionContent');
+
+            try {
+                const response = await fetch('/predict-prices');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('predictionContent').innerHTML = `
+                        <div class="success-badge">✅ Prediction Complete</div>
+                        <div class="analysis-text">${data.prediction}</div>
+                    `;
+                } else {
+                    showError('predictionContent', data.error);
+                }
+            } catch (error) {
+                showError('predictionContent', `Failed to predict prices: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
