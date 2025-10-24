@@ -41,7 +41,7 @@ app = FastAPI(
 
 # Ollama Cloud configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "0a12077bef834a34a6fa586ed8a2ebbb.JgpNeR9YeYZEFw6bZqoCZcnb")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "deepseek-v3.1:671b-cloud")
 
 logger.info(f"Loaded OLLAMA_HOST: {OLLAMA_HOST}")

@@ -3,9 +3,13 @@ from django.http import JsonResponse
 from django.views import View
 from django.utils import timezone
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.contrib import messages
+from django.urls import reverse_lazy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -54,6 +58,77 @@ class LogoutView(View):
         logout(request)
         messages.success(request, 'You have been logged out successfully')
         return redirect('news:login')
+
+
+class SignupView(View):
+    """Signup view."""
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('news:home')
+        return render(request, 'news/signup.html')
+    
+    def post(self, request):
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        # Validation
+        if not username or not email or not password1 or not password2:
+            messages.error(request, 'All fields are required')
+            return render(request, 'news/signup.html')
+        
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match')
+            return render(request, 'news/signup.html')
+        
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long')
+            return render(request, 'news/signup.html')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists')
+            return render(request, 'news/signup.html')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already registered')
+            return render(request, 'news/signup.html')
+        
+        # Create user
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            login(request, user)
+            messages.success(request, 'Account created successfully! Welcome!')
+            return redirect('news:home')
+        except Exception as e:
+            logger.error(f"Error creating user: {e}")
+            messages.error(request, 'Error creating account. Please try again.')
+            return render(request, 'news/signup.html')
+
+
+class CustomPasswordResetView(PasswordResetView):
+    """Custom password reset view."""
+    template_name = 'news/password_reset.html'
+    email_template_name = 'news/password_reset_email.html'
+    subject_template_name = 'news/password_reset_subject.txt'
+    success_url = reverse_lazy('news:password_reset_done')
+
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    """Password reset done view."""
+    template_name = 'news/password_reset_done.html'
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    """Password reset confirm view."""
+    template_name = 'news/password_reset_confirm.html'
+    success_url = reverse_lazy('news:password_reset_complete')
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    """Password reset complete view."""
+    template_name = 'news/password_reset_complete.html'
 
 
 class HomeView(LoginRequiredMixin, View):
