@@ -191,7 +191,7 @@ crypto-news-aggregator/
 
 Create a `.env` file based on `.env.example`:
 
-####NOTE: .env file(s) are not pushed to the repo. Email me at molnar.benedictus@gmail.com for secrets.
+#### NOTE: .env file(s) are not pushed to the repo. Email me at molnar.benedictus@gmail.com for secrets.
 
 - `OLLAMA_API_URL`: URL for Ollama API (default: https://api.ollama.ai/api/generate)
 - `OLLAMA_MODEL`: LLM model to use (default: llama2)
