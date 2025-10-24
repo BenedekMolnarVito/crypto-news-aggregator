@@ -6,17 +6,17 @@ An LLM-based Django web application that collects, aggregates, and analyzes cryp
 
 This application follows a **microservice architecture** with three main services:
 
-1. **Web Scraper Service** (Flask) - Port 5000
+1. **Web Scraper Service** (Flask) 
    - Scrapes latest crypto news from CoinDesk, CoinTelegraph, and Yahoo Finance
    - Provides REST API endpoints for triggering scraping operations
    - Extracts article titles, URLs, and full text content
 
-2. **Sentiment Analysis Service** (FastAPI) - Port 8000
+2. **Sentiment Analysis Service** (FastAPI)
    - Uses Ollama Cloud LLM models for sentiment analysis
    - Analyzes crypto news articles for market sentiment
    - Provides structured sentiment data with confidence scores
 
-3. **Web Application** (Django) - Port 8080
+3. **Web Application** (Django) - Port 8000
    - Main user interface and dashboard
    - Orchestrates scraper and sentiment services
    - Stores and manages articles in PostgreSQL database
@@ -74,14 +74,11 @@ docker-compose up --build
 ```
 
 4. Access the application:
-   - **With Nginx (Production)**: http://vitoscaletta.duckdns.org/crypto-news
    - **Direct Access (Development)**:
-     - Web Dashboard: http://localhost:8080
+     - Web Dashboard: http://localhost:8000
      - Scraper API: http://localhost:5000 (via http://localhost/scraper-api/)
-     - Sentiment API: http://localhost:8000 (via http://localhost/sentiment-api/)
-
-**Note**: The nginx service provides reverse proxy and URL routing. See `NGINX_DEPLOYMENT.md` for production deployment guide.
-
+     - Sentiment API: http://localhost:8001 (via http://localhost/sentiment-api/)
+       
 ### Option 2: Manual Setup
 
 #### 1. Set up Web Scraper Service
@@ -124,7 +121,7 @@ python manage.py runserver 0.0.0.0:8080
 
 ### Sentiment Analysis API
 
-**Base URL**: http://localhost:8000
+**Base URL**: http://localhost:8001
 
 - `GET /health` - Health check
 - `POST /analyze` - Analyze multiple articles
@@ -134,7 +131,7 @@ python manage.py runserver 0.0.0.0:8080
 
 ### Django Web App API
 
-**Base URL**: http://localhost:8080
+**Base URL**: http://localhost:8000
 
 - `GET /` - Dashboard view
 - `POST /api/scrape/` - Trigger news scraping
@@ -154,7 +151,7 @@ python manage.py runserver 0.0.0.0:8080
    - Overall market outlook
    - Individual article sentiments with confidence scores
 
-4. **Admin Panel**: Access Django admin at http://localhost:8080/admin for detailed data management
+4. **Admin Panel**: Access Django admin at http://localhost:8000/admin for detailed data management
 
 ## 🏛️ Project Structure
 
@@ -193,6 +190,8 @@ crypto-news-aggregator/
 ### Environment Variables
 
 Create a `.env` file based on `.env.example`:
+
+####NOTE: .env file(s) are not pushed to the repo. Email me at molnar.benedictus@gmail.com for secrets.
 
 - `OLLAMA_API_URL`: URL for Ollama API (default: https://api.ollama.ai/api/generate)
 - `OLLAMA_MODEL`: LLM model to use (default: llama2)
