@@ -12,6 +12,7 @@ import os
 import logging
 
 # Load environment variables based on debug mode
+## .env and .env.development is not in the repo for security reasons! Email me for access (molnar.benedictus@gmail.com).
 if os.getenv("DEBUG_MODE", "false").lower() == "true":
     load_dotenv('.env.development')
     logging.basicConfig(level=logging.DEBUG)
@@ -40,7 +41,7 @@ app = FastAPI(
 
 # Ollama Cloud configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "0a12077bef834a34a6fa586ed8a2ebbb.JgpNeR9YeYZEFw6bZqoCZcnb")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "deepseek-v3.1:671b-cloud")
 
 logger.info(f"Loaded OLLAMA_HOST: {OLLAMA_HOST}")

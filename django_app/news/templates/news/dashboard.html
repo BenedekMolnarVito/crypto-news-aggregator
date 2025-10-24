@@ -10,8 +10,16 @@
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Crypto News Sentiment Dashboard</h1>
-            <p class="subtitle">LLM-based sentiment analysis of crypto market news</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>🚀 Crypto News Sentiment Dashboard</h1>
+                    <p class="subtitle">LLM-based sentiment analysis of crypto market news</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin-bottom: 8px; color: #666;">Welcome, <strong>{{ user.username }}</strong></p>
+                    <a href="{% url 'news:logout' %}" style="padding: 8px 16px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">Logout</a>
+                </div>
+            </div>
         </header>
         
         <div class="stats-grid">
