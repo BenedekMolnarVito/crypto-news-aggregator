@@ -12,6 +12,7 @@ import os
 import logging
 
 # Load environment variables based on debug mode
+## .env and .env.development is not in the repo for security reasons! Email me for access (molnar.benedictus@gmail.com).
 if os.getenv("DEBUG_MODE", "false").lower() == "true":
     load_dotenv('.env.development')
     logging.basicConfig(level=logging.DEBUG)

@@ -1,7 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views import View
 from django.utils import timezone
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -15,7 +19,44 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class HomeView(View):
+class LoginView(View):
+    """Login view."""
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('news:home')
+        return render(request, 'news/login.html')
+    
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next', 'news:home')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Invalid username or password')
+            return render(request, 'news/login.html')
+
+
+class LogoutView(View):
+    """Logout view."""
+    
+    def get(self, request):
+        logout(request)
+        messages.success(request, 'You have been logged out successfully')
+        return redirect('news:login')
+    
+    def post(self, request):
+        logout(request)
+        messages.success(request, 'You have been logged out successfully')
+        return redirect('news:login')
+
+
+class HomeView(LoginRequiredMixin, View):
     """Main dashboard view."""
     
     def get(self, request):
